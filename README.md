@@ -28,56 +28,7 @@ This project implements a scalable, highly available 3-tier architecture on AWS:
 
 ### Architecture Diagram
 
-```
-                                    Internet
-                                       │
-                                       ▼
-                            ┌──────────────────────┐
-                            │   Internet Gateway   │
-                            └──────────┬───────────┘
-                                       │
-                    ┌──────────────────┴──────────────────┐
-                    │                                      │
-         ┌──────────▼──────────┐            ┌─────────────▼─────────┐
-         │  Public Subnet A    │            │   Public Subnet B     │
-         │   (us-east-1a)      │            │    (us-east-1b)       │
-         └──────────┬───────────┘            └─────────┬─────────────┘
-                    │                                   │
-                    └──────────────┬────────────────────┘
-                                   │
-                        ┌──────────▼──────────┐
-                        │  Application Load   │
-                        │     Balancer        │
-                        └──────────┬──────────┘
-                                   │
-                ┌──────────────────┴──────────────────┐
-                │                                      │
-     ┌──────────▼──────────┐            ┌─────────────▼─────────┐
-     │ Private App Subnet A│            │ Private App Subnet B  │
-     │    (us-east-1a)     │            │    (us-east-1b)       │
-     │  ┌───────────────┐  │            │  ┌───────────────┐   │
-     │  │   EC2/ASG     │  │            │  │   EC2/ASG     │   │
-     │  │  Web Servers  │  │            │  │  Web Servers  │   │
-     │  └───────┬───────┘  │            │  └───────┬───────┘   │
-     └──────────┼───────────┘            └──────────┼───────────┘
-                │                                    │
-                │         ┌─────────────┐            │
-                └─────────►  NAT Gateway ◄───────────┘
-                          └─────────────┘
-                                 │
-                ┌────────────────┴────────────────┐
-                │                                  │
-     ┌──────────▼──────────┐        ┌─────────────▼─────────┐
-     │ Private DB Subnet A │        │  Private DB Subnet B  │
-     │    (us-east-1a)     │        │     (us-east-1b)      │
-     │  ┌───────────────┐  │        │  ┌───────────────┐   │
-     │  │  RDS Primary  │──┼────────┼──►│ RDS Standby  │   │
-     │  │   (MySQL)     │  │        │  │  (Multi-AZ)   │   │
-     │  └───────────────┘  │        │  └───────────────┘   │
-     └─────────────────────┘        └─────────────────────┘
-```
-
-### Architecture Layers
+![alt text](tier3.jpg)### Architecture Layers
 
 #### **Tier 1: Presentation Layer** (Public Subnets)
 
@@ -121,7 +72,7 @@ This project implements a scalable, highly available 3-tier architecture on AWS:
 ├── outputs.tf                 # Root level outputs
 ├── terraform.tfvars          # Variable values (DO NOT commit secrets)
 ├── README.md                 # This file
-├── architecture-diagram.png  # Visual architecture diagram
+├── tier3.jpg  # Visual architecture diagram
 └── modules/
     ├── networking/
     │   ├── main.tf           # VPC, subnets, gateways, route tables
