@@ -28,12 +28,6 @@ variable "db_username" {
 
 }
 
-variable "db_password" {
-  description = "Database master password"
-  type        = string
-  sensitive   = true
-}
-
 variable "owner_name" {
   description = "Your name for tagging"
   type        = string
