@@ -15,7 +15,8 @@ resource "aws_db_instance" "main" {
   engine_version         = "8.0"
   instance_class         = var.db_instance_class
   allocated_storage      = var.allocated_storage
-  storage_type           = "gp2"
+  storage_type           = "gp3"
+  storage_encrypted      = true
   db_name                = "appdb"
   username               = var.db_username
   password               = var.db_password
@@ -23,7 +24,8 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [var.db_security_group_id]
   skip_final_snapshot    = true
   publicly_accessible    = false
-  multi_az               = false
+  multi_az               = true
+  iam_database_authentication_enabled = true
 
   backup_retention_period = 7
   backup_window           = "03:00-04:00"
@@ -34,36 +36,4 @@ resource "aws_db_instance" "main" {
   })
 }
 
-# Pick the default VPC
-data "aws_vpc" "default" {
-  default = true
-}
-# Pick all subnets in the default VPC for public access
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-# SECURITY GROUP
 
-resource "aws_security_group" "rds_sg" {
-  name        = "rds_sg"
-  description = "Allow MySQL traffic from anywhere (public access)"
-  vpc_id      = data.aws_vpc.default.id
-  ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  tags = {
-    Name = "RDS SG"
-  }
-}

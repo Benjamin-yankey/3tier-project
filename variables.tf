@@ -64,8 +64,4 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
-variable "db_username" {
-  description = "Database master username"
-  type        = string
 
-}

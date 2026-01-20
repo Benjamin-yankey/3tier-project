@@ -56,7 +56,14 @@ source /etc/profile.d/app-env.sh
 ############################
 # START APPLICATION
 ############################
-nohup nodemon Node.js > app.log 2>&1 &
+export PORT=3000
+export DB_HOST="${var.db_host}"
+export DB_USER="${var.db_user}"
+export DB_PASSWORD="${var.db_password}"
+export DB_NAME="${var.db_name}"
+export DB_PORT="${var.db_port}"
+
+nohup node Node.js > /var/log/app.log 2>&1 &
 
 EOF
 }
