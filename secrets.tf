@@ -1,11 +1,11 @@
-# Create secret for database password
-resource "aws_secretsmanager_secret" "db_password" {
-  name                    = "${var.project_name}-${var.environment}-db-password"
-  description             = "RDS database password"
-  recovery_window_in_days = 7
+# Create secret for database credentials
+resource "aws_secretsmanager_secret" "db_credentials" {
+  name                    = "${var.project_name}-${var.environment}-db-credentials"
+  description             = "RDS database credentials"
+  recovery_window_in_days = 0
 
   tags = {
-    Name        = "${var.project_name}-db-password"
+    Name        = "${var.project_name}-db-credentials"
     Environment = var.environment
     Project     = var.project_name
   }
@@ -13,18 +13,22 @@ resource "aws_secretsmanager_secret" "db_password" {
 
 # Generate random password
 resource "random_password" "db_password" {
-  length  = 16
-  special = true
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
-# Store the password value
-resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = random_password.db_password.result
+# Store credentials as JSON
+resource "aws_secretsmanager_secret_version" "db_credentials" {
+  secret_id = aws_secretsmanager_secret.db_credentials.id
+  secret_string = jsonencode({
+    username = var.db_username
+    password = random_password.db_password.result
+  })
 }
 
-# Data source to retrieve the password
-data "aws_secretsmanager_secret_version" "db_password" {
-  secret_id  = aws_secretsmanager_secret.db_password.id
-  depends_on = [aws_secretsmanager_secret_version.db_password]
+# Data source to retrieve credentials
+data "aws_secretsmanager_secret_version" "db_credentials" {
+  secret_id  = aws_secretsmanager_secret.db_credentials.id
+  depends_on = [aws_secretsmanager_secret_version.db_credentials]
 }

@@ -93,3 +93,13 @@ variable "create_bastion" {
   description = "Whether to create a bastion host"
   type        = bool
 }
+
+variable "db_credentials_secret_id" {
+  description = "Secrets Manager secret ID for database credentials"
+  type        = string
+}
+
+variable "instance_profile_name" {
+  description = "IAM instance profile name for EC2 instances"
+  type        = string
+}

@@ -3,6 +3,16 @@ output "alb_dns_name" {
   value       = module.alb.alb_dns_name
 }
 
+output "target_group_arn" {
+  description = "ARN of the target group"
+  value       = module.alb.target_group_arn
+}
+
+output "asg_name" {
+  description = "Name of the Auto Scaling Group"
+  value       = module.compute.asg_name
+}
+
 # output "rds_endpoint" {
 #   description = "RDS database endpoint"
 #   value       = module.database.db_endpoint

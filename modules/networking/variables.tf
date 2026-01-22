@@ -7,3 +7,9 @@ variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)
 }
+
+variable "enable_nat_gateway" {
+  description = "Enable NAT Gateway for private subnets"
+  type        = bool
+  default     = true
+}

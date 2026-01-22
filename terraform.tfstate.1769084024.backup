@@ -1,0 +1,950 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.2",
+  "serial": 1012,
+  "lineage": "41ea2972-2949-0fc1-0005-7d7c262d62b3",
+  "outputs": {
+    "vpc_id": {
+      "value": "vpc-01a95ae32e0108a98",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "data",
+      "type": "aws_secretsmanager_secret_version",
+      "name": "db_credentials",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy",
+            "created_date": "2026-01-22T11:57:53Z",
+            "id": "arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy|AWSCURRENT",
+            "secret_binary": "",
+            "secret_id": "arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy",
+            "secret_string": "{\"password\":\"\\u003e83tF#n!!NoezTT8\",\"username\":\"admin\"}",
+            "version_id": "terraform-20260122115753522400000002",
+            "version_stage": "AWSCURRENT",
+            "version_stages": [
+              "AWSCURRENT"
+            ]
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_binary"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_string"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_iam_instance_profile",
+      "name": "ec2_profile",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::615299752577:instance-profile/tier3-app-dev-ec2-profile",
+            "create_date": "2026-01-22T11:57:53Z",
+            "id": "tier3-app-dev-ec2-profile",
+            "name": "tier3-app-dev-ec2-profile",
+            "name_prefix": "",
+            "path": "/",
+            "role": "tier3-app-dev-ec2-role",
+            "tags": {},
+            "tags_all": {},
+            "unique_id": "AIPAY6QVZEKAWURAKMQFN"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_iam_role.ec2_role"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "ec2_role",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::615299752577:role/tier3-app-dev-ec2-role",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2026-01-22T11:57:52Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "tier3-app-dev-ec2-role",
+            "inline_policy": [
+              {
+                "name": "tier3-app-dev-secrets-policy",
+                "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"secretsmanager:GetSecretValue\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy\"}]}"
+              }
+            ],
+            "managed_policy_arns": [
+              "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+            ],
+            "max_session_duration": 3600,
+            "name": "tier3-app-dev-ec2-role",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {},
+            "tags_all": {},
+            "unique_id": "AROAY6QVZEKAZPW4G6SAF"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "secrets_access",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "tier3-app-dev-ec2-role:tier3-app-dev-secrets-policy",
+            "name": "tier3-app-dev-secrets-policy",
+            "name_prefix": "",
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"secretsmanager:GetSecretValue\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy\"}]}",
+            "role": "tier3-app-dev-ec2-role"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_iam_role.ec2_role",
+            "aws_secretsmanager_secret.db_credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "ssm_policy",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "tier3-app-dev-ec2-role-20260122115754550200000003",
+            "policy_arn": "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+            "role": "tier3-app-dev-ec2-role"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_iam_role.ec2_role"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_secretsmanager_secret",
+      "name": "db_credentials",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy",
+            "description": "RDS database credentials",
+            "force_overwrite_replica_secret": false,
+            "id": "arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy",
+            "kms_key_id": "",
+            "name": "tier3-app-dev-db-credentials",
+            "name_prefix": "",
+            "policy": "",
+            "recovery_window_in_days": 0,
+            "replica": [],
+            "tags": {
+              "Environment": "dev",
+              "Name": "tier3-app-db-credentials",
+              "Project": "tier3-app"
+            },
+            "tags_all": {
+              "Environment": "dev",
+              "Name": "tier3-app-db-credentials",
+              "Project": "tier3-app"
+            }
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_secretsmanager_secret_version",
+      "name": "db_credentials",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy",
+            "has_secret_string_wo": null,
+            "id": "arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy|terraform-20260122115753522400000002",
+            "secret_binary": "",
+            "secret_id": "arn:aws:secretsmanager:eu-west-1:615299752577:secret:tier3-app-dev-db-credentials-dT7cJy",
+            "secret_string": "{\"password\":\"\\u003e83tF#n!!NoezTT8\",\"username\":\"admin\"}",
+            "secret_string_wo": null,
+            "secret_string_wo_version": null,
+            "version_id": "terraform-20260122115753522400000002",
+            "version_stages": [
+              "AWSCURRENT"
+            ]
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_binary"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_string"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "secret_string_wo"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_secretsmanager_secret.db_credentials",
+            "random_password.db_password"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "random_password",
+      "name": "db_password",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$Xrw0q4p2K8WLPRP2nJiAnOkm3/hCd/bu0/RT23kVoecZhOiGC6Fby",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": "!#$%\u0026*()-_=+[]{}\u003c\u003e:?",
+            "result": "\u003e83tF#n!!NoezTT8",
+            "special": true,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "data",
+      "type": "aws_availability_zones",
+      "name": "available",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "all_availability_zones": null,
+            "exclude_names": null,
+            "exclude_zone_ids": null,
+            "filter": null,
+            "group_names": [
+              "eu-west-1-zg-1"
+            ],
+            "id": "eu-west-1",
+            "names": [
+              "eu-west-1a",
+              "eu-west-1b",
+              "eu-west-1c"
+            ],
+            "state": "available",
+            "timeouts": null,
+            "zone_ids": [
+              "euw1-az3",
+              "euw1-az1",
+              "euw1-az2"
+            ]
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_eip",
+      "name": "nat",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "address": null,
+            "allocation_id": "eipalloc-0569479c09f573673",
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:elastic-ip/eipalloc-0569479c09f573673",
+            "associate_with_private_ip": null,
+            "association_id": "eipassoc-00d095f7c393c4172",
+            "carrier_ip": "",
+            "customer_owned_ip": "",
+            "customer_owned_ipv4_pool": "",
+            "domain": "vpc",
+            "id": "eipalloc-0569479c09f573673",
+            "instance": "",
+            "ipam_pool_id": null,
+            "network_border_group": "eu-west-1",
+            "network_interface": "eni-05affe26a64e7a640",
+            "private_dns": "ip-10-0-0-157.eu-west-1.compute.internal",
+            "private_ip": "10.0.0.157",
+            "ptr_record": "",
+            "public_dns": "ec2-34-240-96-180.eu-west-1.compute.amazonaws.com",
+            "public_ip": "34.240.96.180",
+            "public_ipv4_pool": "amazon",
+            "tags": {
+              "Name": "tier3-app-nat-eip",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-nat-eip",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc": true
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiZGVsZXRlIjoxODAwMDAwMDAwMDAsInJlYWQiOjkwMDAwMDAwMDAwMCwidXBkYXRlIjozMDAwMDAwMDAwMDB9fQ==",
+          "dependencies": [
+            "module.networking.aws_internet_gateway.main",
+            "module.networking.aws_vpc.main"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_internet_gateway",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:internet-gateway/igw-029bba55f5633252b",
+            "id": "igw-029bba55f5633252b",
+            "owner_id": "615299752577",
+            "tags": {
+              "Name": "tier3-app-igw",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-igw",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-01a95ae32e0108a98"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_nat_gateway",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "status": "tainted",
+          "schema_version": 0,
+          "attributes": {
+            "allocation_id": "eipalloc-0569479c09f573673",
+            "association_id": null,
+            "connectivity_type": "public",
+            "id": "nat-06c1a459ca153d369",
+            "network_interface_id": null,
+            "private_ip": null,
+            "public_ip": null,
+            "secondary_allocation_ids": null,
+            "secondary_private_ip_address_count": null,
+            "secondary_private_ip_addresses": [],
+            "subnet_id": "subnet-0b567d5ca14910847",
+            "tags": {
+              "Name": "tier3-app-nat-gw",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-nat-gw",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTgwMDAwMDAwMDAwMCwidXBkYXRlIjo2MDAwMDAwMDAwMDB9fQ==",
+          "dependencies": [
+            "module.networking.aws_eip.nat",
+            "module.networking.aws_internet_gateway.main",
+            "module.networking.aws_subnet.public",
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_route_table",
+      "name": "public",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:route-table/rtb-019f0c2d3f30af41e",
+            "id": "rtb-019f0c2d3f30af41e",
+            "owner_id": "615299752577",
+            "propagating_vgws": [],
+            "route": [
+              {
+                "carrier_gateway_id": "",
+                "cidr_block": "0.0.0.0/0",
+                "core_network_arn": "",
+                "destination_prefix_list_id": "",
+                "egress_only_gateway_id": "",
+                "gateway_id": "igw-029bba55f5633252b",
+                "ipv6_cidr_block": "",
+                "local_gateway_id": "",
+                "nat_gateway_id": "",
+                "network_interface_id": "",
+                "transit_gateway_id": "",
+                "vpc_endpoint_id": "",
+                "vpc_peering_connection_id": ""
+              }
+            ],
+            "tags": {
+              "Name": "tier3-app-public-rt",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-public-rt",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-01a95ae32e0108a98"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.networking.aws_internet_gateway.main",
+            "module.networking.aws_vpc.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "public",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 0,
+          "attributes": {
+            "gateway_id": "",
+            "id": "rtbassoc-0fec9756e3df3bcde",
+            "route_table_id": "rtb-019f0c2d3f30af41e",
+            "subnet_id": "subnet-0b567d5ca14910847",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.networking.aws_internet_gateway.main",
+            "module.networking.aws_route_table.public",
+            "module.networking.aws_subnet.public",
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 0,
+          "attributes": {
+            "gateway_id": "",
+            "id": "rtbassoc-07540e20d45e37d54",
+            "route_table_id": "rtb-019f0c2d3f30af41e",
+            "subnet_id": "subnet-0175d7fd89db1716f",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.networking.aws_internet_gateway.main",
+            "module.networking.aws_route_table.public",
+            "module.networking.aws_subnet.public",
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "private_app",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:subnet/subnet-0840c7de454385742",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-west-1a",
+            "availability_zone_id": "euw1-az3",
+            "cidr_block": "10.0.10.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-0840c7de454385742",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "615299752577",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Name": "tier3-app-private-app-subnet-1",
+              "Tier": "Application",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-private-app-subnet-1",
+              "Tier": "Application",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-01a95ae32e0108a98"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:subnet/subnet-06c03135b783604ee",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-west-1b",
+            "availability_zone_id": "euw1-az1",
+            "cidr_block": "10.0.11.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-06c03135b783604ee",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "615299752577",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Name": "tier3-app-private-app-subnet-2",
+              "Tier": "Application",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-private-app-subnet-2",
+              "Tier": "Application",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-01a95ae32e0108a98"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "private_db",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:subnet/subnet-07f0e29344d6cc59b",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-west-1a",
+            "availability_zone_id": "euw1-az3",
+            "cidr_block": "10.0.20.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-07f0e29344d6cc59b",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "615299752577",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Name": "tier3-app-private-db-subnet-1",
+              "Tier": "Database",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-private-db-subnet-1",
+              "Tier": "Database",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-01a95ae32e0108a98"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:subnet/subnet-04d678868b3b8b8bb",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-west-1b",
+            "availability_zone_id": "euw1-az1",
+            "cidr_block": "10.0.21.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-04d678868b3b8b8bb",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "615299752577",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Name": "tier3-app-private-db-subnet-2",
+              "Tier": "Database",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-private-db-subnet-2",
+              "Tier": "Database",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-01a95ae32e0108a98"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "public",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:subnet/subnet-0b567d5ca14910847",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-west-1a",
+            "availability_zone_id": "euw1-az3",
+            "cidr_block": "10.0.0.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-0b567d5ca14910847",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": true,
+            "outpost_arn": "",
+            "owner_id": "615299752577",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Name": "tier3-app-public-subnet-1",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-public-subnet-1",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-01a95ae32e0108a98"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ],
+          "create_before_destroy": true
+        },
+        {
+          "index_key": 1,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:subnet/subnet-0175d7fd89db1716f",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-west-1b",
+            "availability_zone_id": "euw1-az1",
+            "cidr_block": "10.0.1.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-0175d7fd89db1716f",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": true,
+            "outpost_arn": "",
+            "owner_id": "615299752577",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Name": "tier3-app-public-subnet-2",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-public-subnet-2",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-01a95ae32e0108a98"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main",
+            "module.networking.data.aws_availability_zones.available"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_vpc",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-west-1:615299752577:vpc/vpc-01a95ae32e0108a98",
+            "assign_generated_ipv6_cidr_block": false,
+            "cidr_block": "10.0.0.0/16",
+            "default_network_acl_id": "acl-02fe6a4c82487a99c",
+            "default_route_table_id": "rtb-0dc3def467c8b896c",
+            "default_security_group_id": "sg-0412307063e53efc7",
+            "dhcp_options_id": "dopt-041936f3dd2335f45",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "enable_network_address_usage_metrics": false,
+            "id": "vpc-01a95ae32e0108a98",
+            "instance_tenancy": "default",
+            "ipv4_ipam_pool_id": null,
+            "ipv4_netmask_length": null,
+            "ipv6_association_id": "",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_network_border_group": "",
+            "ipv6_ipam_pool_id": "",
+            "ipv6_netmask_length": 0,
+            "main_route_table_id": "rtb-0dc3def467c8b896c",
+            "owner_id": "615299752577",
+            "tags": {
+              "Name": "tier3-app-vpc",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            },
+            "tags_all": {
+              "Name": "tier3-app-vpc",
+              "environment": "dev",
+              "owner_name": "huey",
+              "project_name": "tier3-app"
+            }
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ==",
+          "create_before_destroy": true
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
