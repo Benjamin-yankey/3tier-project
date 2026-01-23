@@ -28,7 +28,9 @@ This project implements a scalable, highly available 3-tier architecture on AWS:
 
 ### Architecture Diagram
 
-![alt text](tier3.jpg)### Architecture Layers
+![alt text](3tier.png)
+
+### Architecture Layers
 
 #### **Tier 1: Presentation Layer** (Public Subnets)
 
@@ -296,6 +298,7 @@ chmod 400 3tier-key.pem
 **User Data Script:**
 
 The compute module automatically:
+
 - Installs Node.js 18
 - Clones the application from GitHub (https://github.com/Asheryram/todo-app)
 - Retrieves database credentials from AWS Secrets Manager
