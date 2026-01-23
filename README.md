@@ -215,7 +215,7 @@ chmod 400 3tier-key.pem
 | -------------- | --------- | -------- | ---- | ---------- |
 | ALB SG         | Ingress   | TCP      | 80   | 0.0.0.0/0  |
 | ALB SG         | Ingress   | TCP      | 443  | 0.0.0.0/0  |
-| App SG         | Ingress   | TCP      | 80   | ALB SG     |
+| App SG         | Ingress   | TCP      | 3000 | ALB SG     |
 | App SG         | Ingress   | ICMP     | -    | ALB SG     |
 | App SG         | Ingress   | TCP      | 22   | Bastion SG |
 | DB SG          | Ingress   | TCP      | 3306 | App SG     |
@@ -247,11 +247,11 @@ chmod 400 3tier-key.pem
 
 **Health Check Configuration:**
 
-- Path: `/health` or `/`
+- Path: `/health`
 - Interval: 30 seconds
 - Timeout: 5 seconds
 - Healthy threshold: 2
-- Unhealthy threshold: 2
+- Unhealthy threshold: 3
 
 **Key Inputs:**
 
@@ -282,11 +282,11 @@ chmod 400 3tier-key.pem
 
 **Auto Scaling Configuration:**
 
-- **Desired Capacity:** 2 instances
+- **Desired Capacity:** 1 instance
 - **Minimum Size:** 1 instance
-- **Maximum Size:** 4 instances
+- **Maximum Size:** 2 instances
 - **Health Check Type:** ELB
-- **Health Check Grace Period:** 300 seconds
+- **Health Check Grace Period:** 300 seconds (5 minutes)
 
 **Scaling Policies:**
 
@@ -295,14 +295,14 @@ chmod 400 3tier-key.pem
 
 **User Data Script:**
 
-```bash
-#!/bin/bash
-yum update -y
-yum install -y httpd
-systemctl start httpd
-systemctl enable httpd
-echo "<h1>Hello from $(hostname -f)</h1>" > /var/www/html/index.html
-```
+The compute module automatically:
+- Installs Node.js 18
+- Clones the application from GitHub (https://github.com/Asheryram/todo-app)
+- Retrieves database credentials from AWS Secrets Manager
+- Configures environment variables
+- Waits for database connectivity
+- Starts the Node.js application on port 3000
+- Validates application health via `/health` endpoint
 
 **Key Inputs:**
 

@@ -1,0 +1,22 @@
+# Example Terraform Variables
+# Copy this file to terraform.tfvars and update with your values
+# DO NOT commit terraform.tfvars to version control
+
+# Project Configuration
+project_name = "3tier-app"
+environment  = "dev"
+owner_name   = "your-name"
+
+# AWS Configuration
+aws_region = "eu-west-1"
+
+# Network Configuration
+vpc_cidr = "10.0.0.0/16"
+
+# Compute Configuration
+ssh_key_name = "your-key-name"
+
+# Database Configuration
+db_name     = "appdb"
+db_username = "admin"
+# db_password will be auto-generated via random_password resource
