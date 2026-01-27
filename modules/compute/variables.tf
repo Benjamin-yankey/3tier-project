@@ -134,6 +134,15 @@ variable "target_group_arn" {
   type        = string
 }
 
+# ALB target group ARN suffix for CloudWatch metrics
+# Format: targetgroup/name/suffix (extracted from full ARN)
+# Used for request count per target metric in scaling policies
+variable "target_group_arn_suffix" {
+  description = "Target group ARN suffix for CloudWatch metrics (e.g., 'targetgroup/my-target-group/1d8c9c5d27d6a8cd')"
+  type        = string
+  default     = "" # If empty, request-based scaling will be skipped
+}
+
 # Target number of instances ASG should maintain
 # ASG will launch/terminate instances to match this number
 variable "asg_desired_capacity" {

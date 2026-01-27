@@ -63,13 +63,22 @@ resource "aws_security_group" "app" {
     security_groups = [aws_security_group.alb.id]
   }
 
-  # SSH from bastion (if you create one)
+  # SSH from bastion host only (not directly from internet)
   ingress {
-    description = "SSH from anywhere (for testing - restrict in production)"
-    from_port   = 22
-    to_port     = 22
+    description     = "SSH from bastion host"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]
+  }
+
+  # SSM Session Manager - allows Systems Manager to manage instances
+  ingress {
+    description = "SSM - Systems Manager Session Manager"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # In production, use bastion SG
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Allow all outbound
@@ -127,13 +136,13 @@ resource "aws_security_group" "bastion" {
   description = "Bastion host security group"
   vpc_id      = var.vpc_id
 
-  # SSH from anywhere (restrict this CIDR in production)
+  # SSH from restricted CIDR only (restrict this CIDR in production)
   ingress {
-    description = "SSH from Internet (restrict in prod)"
+    description = "SSH from admin (restrict in prod)"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.admin_cidr]
   }
 
   egress {

@@ -20,3 +20,9 @@ ssh_key_name = "your-key-name"
 db_name     = "appdb"
 db_username = "admin"
 # db_password will be auto-generated via random_password resource
+
+# Security Configuration
+# IMPORTANT: Restrict this to your IP or organization's IP range in production!
+# Leave as "0.0.0.0/0" for development, but update for production
+admin_cidr = "0.0.0.0/0"  # TODO: Replace with your IP (e.g., "203.0.113.0/24") for production
+

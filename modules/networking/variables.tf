@@ -17,5 +17,5 @@ variable "enable_nat_gateway" {
 variable "enable_flow_logs" {
   description = "Enable VPC Flow Logs"
   type        = bool
-  default     = true
+  default     = false
 }

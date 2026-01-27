@@ -26,6 +26,7 @@ module "security" {
   project_name = var.project_name
   environment  = var.environment
   owner_name   = var.owner_name
+  admin_cidr   = var.admin_cidr
 
   depends_on = [module.networking]
 }
@@ -79,6 +80,7 @@ module "compute" {
   app_security_group_id     = module.security.app_sg_id
   bastion_security_group_id = module.security.bastion_sg_id
   target_group_arn          = module.alb.target_group_arn
+  target_group_arn_suffix   = module.alb.target_group_arn_suffix
 
   instance_type        = "t3.micro"
   asg_min_size         = 1

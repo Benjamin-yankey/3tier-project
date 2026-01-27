@@ -195,8 +195,8 @@ EOF
 resource "aws_launch_template" "app" {
   name_prefix   = "${var.common_tags.project_name}-${var.common_tags.environment}-lt-"
   description   = "Launch template for ${var.common_tags.project_name} application servers"
-  image_id      = data.aws_ami.ubuntu.id  # Use the Ubuntu AMI we fetched earlier
-  instance_type = var.instance_type        # Instance size (e.g., t3.micro)
+  image_id      = data.aws_ami.ubuntu.id # Use the Ubuntu AMI we fetched earlier
+  instance_type = var.instance_type      # Instance size (e.g., t3.micro)
 
   # Attach security group to control inbound/outbound traffic
   vpc_security_group_ids = [var.app_security_group_id]
@@ -232,20 +232,20 @@ resource "aws_launch_template" "app" {
 # It can scale up/down based on demand and replaces unhealthy instances
 resource "aws_autoscaling_group" "app" {
   name                      = "${var.common_tags.project_name}-${var.common_tags.environment}-asg"
-  vpc_zone_identifier       = var.private_app_subnet_ids  # Deploy across multiple AZs for HA
-  target_group_arns         = [var.target_group_arn]      # Register instances with ALB target group
-  health_check_type         = "ELB"                       # Use ALB health checks (more reliable than EC2)
-  health_check_grace_period = 300                         # Wait 5 minutes before checking health (app startup time)
+  vpc_zone_identifier       = var.private_app_subnet_ids # Deploy across multiple AZs for HA
+  target_group_arns         = [var.target_group_arn]     # Register instances with ALB target group
+  health_check_type         = "ELB"                      # Use ALB health checks (more reliable than EC2)
+  health_check_grace_period = 300                        # Wait 5 minutes before checking health (app startup time)
 
   # Define scaling boundaries
-  desired_capacity = var.asg_desired_capacity  # Target number of instances
-  min_size         = var.asg_min_size          # Minimum instances (always running)
-  max_size         = var.asg_max_size          # Maximum instances (scale limit)
+  desired_capacity = var.asg_desired_capacity # Target number of instances
+  min_size         = var.asg_min_size         # Minimum instances (always running)
+  max_size         = var.asg_max_size         # Maximum instances (scale limit)
 
   # Reference the launch template for instance configuration
   launch_template {
     id      = aws_launch_template.app.id
-    version = "$Latest"  # Always use the latest version of the template
+    version = "$Latest" # Always use the latest version of the template
   }
 
   # Enable CloudWatch metrics for monitoring ASG behavior
@@ -263,18 +263,180 @@ resource "aws_autoscaling_group" "app" {
 }
 
 # ============================================================================
+# AUTO SCALING POLICIES
+# ============================================================================
+# These policies automatically scale the ASG based on CPU utilization
+# This is different from health checks which only replace failed instances
+
+# Target Tracking Scaling Policy - Scale based on CPU at 80%
+resource "aws_autoscaling_policy" "target_tracking_cpu" {
+  name                   = "${var.common_tags.project_name}-${var.common_tags.environment}-cpu-scaling"
+  policy_type            = "TargetTrackingScaling"
+  adjustment_type        = "ChangeInCapacity"
+  autoscaling_group_name = aws_autoscaling_group.app.name
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 80.0
+  }
+}
+
+# Target Tracking Scaling Policy - Scale based on ALB Request Count Per Target
+# Commented out - use CPU/Memory scaling instead which don't require valid ARN suffix
+# resource "aws_autoscaling_policy" "target_tracking_requests" {
+#   name                   = "${var.common_tags.project_name}-${var.common_tags.environment}-request-scaling"
+#   policy_type            = "TargetTrackingScaling"
+#   adjustment_type        = "ChangeInCapacity"
+#   autoscaling_group_name = aws_autoscaling_group.app.name
+#
+#   target_tracking_configuration {
+#     predefined_metric_specification {
+#       predefined_metric_type = "ALBRequestCountPerTarget"
+#       resource_label         = var.target_group_arn_suffix
+#     }
+#     target_value = 100.0
+#   }
+# }
+
+# Step Scaling Policy - Scale up on Memory Usage > 70%
+resource "aws_autoscaling_policy" "step_scaling_up_memory" {
+  name                   = "${var.common_tags.project_name}-${var.common_tags.environment}-memory-step-up"
+  policy_type            = "StepScaling"
+  adjustment_type        = "ChangeInCapacity"
+  autoscaling_group_name = aws_autoscaling_group.app.name
+
+  step_adjustment {
+    metric_interval_lower_bound = 0
+    scaling_adjustment          = 1
+  }
+}
+
+# CloudWatch Alarm - Memory Usage > 70%
+resource "aws_cloudwatch_metric_alarm" "memory_high" {
+  alarm_name          = "${var.common_tags.project_name}-${var.common_tags.environment}-memory-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "MemoryUtilization"
+  namespace           = "CWAgent"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 70.0
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app.name
+  }
+
+  alarm_actions = [aws_autoscaling_policy.step_scaling_up_memory.arn]
+}
+
+# Step Scaling Policy - Scale up aggressively if CPU > 90% (emergency scaling)
+resource "aws_autoscaling_policy" "step_scaling_up" {
+  name                   = "${var.common_tags.project_name}-${var.common_tags.environment}-step-up"
+  policy_type            = "StepScaling"
+  adjustment_type        = "ChangeInCapacity"
+  autoscaling_group_name = aws_autoscaling_group.app.name
+
+  step_adjustment {
+    metric_interval_lower_bound = 0
+    scaling_adjustment          = 1 # Add 1 instance
+  }
+}
+
+# CloudWatch Alarm - Trigger step scaling UP when CPU > 90%
+resource "aws_cloudwatch_metric_alarm" "cpu_high" {
+  alarm_name          = "${var.common_tags.project_name}-${var.common_tags.environment}-cpu-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300 # 5 minutes
+  statistic           = "Average"
+  threshold           = 90.0 # Alert when CPU > 90%
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app.name
+  }
+
+  alarm_actions = [aws_autoscaling_policy.step_scaling_up.arn]
+}
+
+# Step Scaling Policy - Scale down when CPU < 40% (cost optimization)
+resource "aws_autoscaling_policy" "step_scaling_down" {
+  name                   = "${var.common_tags.project_name}-${var.common_tags.environment}-step-down"
+  policy_type            = "StepScaling"
+  adjustment_type        = "ChangeInCapacity"
+  autoscaling_group_name = aws_autoscaling_group.app.name
+
+  step_adjustment {
+    metric_interval_upper_bound = 0
+    scaling_adjustment          = -1 # Remove 1 instance
+  }
+}
+
+# CloudWatch Alarm - Trigger step scaling DOWN when CPU < 40%
+resource "aws_cloudwatch_metric_alarm" "cpu_low" {
+  alarm_name          = "${var.common_tags.project_name}-${var.common_tags.environment}-cpu-low"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 5
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300 # 5 minutes
+  statistic           = "Average"
+  threshold           = 40.0 # Alert when CPU < 40%
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app.name
+  }
+
+  alarm_actions = [aws_autoscaling_policy.step_scaling_down.arn]
+}
+
+# Step Scaling Policy - Scale down on Memory Usage < 50%
+resource "aws_autoscaling_policy" "step_scaling_down_memory" {
+  name                   = "${var.common_tags.project_name}-${var.common_tags.environment}-memory-step-down"
+  policy_type            = "StepScaling"
+  adjustment_type        = "ChangeInCapacity"
+  autoscaling_group_name = aws_autoscaling_group.app.name
+
+  step_adjustment {
+    metric_interval_upper_bound = 0
+    scaling_adjustment          = -1
+  }
+}
+
+# CloudWatch Alarm - Memory Usage < 50%
+resource "aws_cloudwatch_metric_alarm" "memory_low" {
+  alarm_name          = "${var.common_tags.project_name}-${var.common_tags.environment}-memory-low"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 5
+  metric_name         = "MemoryUtilization"
+  namespace           = "CWAgent"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 50.0
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app.name
+  }
+
+  alarm_actions = [aws_autoscaling_policy.step_scaling_down_memory.arn]
+}
+
+# ============================================================================
 # BASTION HOST (OPTIONAL)
 # ============================================================================
 
 # Bastion host (jump box) provides secure SSH access to private instances
 # Only created if var.create_bastion is true
 resource "aws_instance" "bastion" {
-  count                  = var.create_bastion ? 1 : 0  # Conditional creation
-  ami                    = data.aws_ami.ubuntu.id      # Same Ubuntu AMI as app servers
-  instance_type          = "t3.micro"                  # Small instance (bastion doesn't need much power)
-  subnet_id              = var.public_subnet_ids[0]    # Deploy in public subnet for internet access
-  vpc_security_group_ids = [var.bastion_security_group_id]  # Security group allows SSH from specific IPs
-  key_name               = var.ssh_key_name != "" ? var.ssh_key_name : null  # SSH key for authentication
+  count                  = var.create_bastion ? 1 : 0                       # Conditional creation
+  ami                    = data.aws_ami.ubuntu.id                           # Same Ubuntu AMI as app servers
+  instance_type          = "t3.micro"                                       # Small instance (bastion doesn't need much power)
+  subnet_id              = var.public_subnet_ids[0]                         # Deploy in public subnet for internet access
+  vpc_security_group_ids = [var.bastion_security_group_id]                  # Security group allows SSH from specific IPs
+  key_name               = var.ssh_key_name != "" ? var.ssh_key_name : null # SSH key for authentication
 
   # Assign public IP so we can SSH from the internet
   associate_public_ip_address = true
@@ -301,10 +463,10 @@ resource "aws_instance" "bastion" {
 
   # Configure root EBS volume
   root_block_device {
-    volume_type           = "gp3"  # General Purpose SSD (latest generation, better performance)
-    volume_size           = 10     # 10 GB is sufficient for bastion host
-    delete_on_termination = true   # Clean up volume when instance is terminated
-    encrypted             = true   # Encrypt data at rest for security compliance
+    volume_type           = "gp3" # General Purpose SSD (latest generation, better performance)
+    volume_size           = 10    # 10 GB is sufficient for bastion host
+    delete_on_termination = true  # Clean up volume when instance is terminated
+    encrypted             = true  # Encrypt data at rest for security compliance
   }
 
   # Tag the bastion instance for identification and cost tracking

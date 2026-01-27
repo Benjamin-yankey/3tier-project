@@ -144,11 +144,11 @@ resource "aws_route_table_association" "private_db" {
 
 # VPC Flow Logs
 resource "aws_flow_log" "main" {
-  count                = var.enable_flow_logs ? 1 : 0
-  iam_role_arn         = aws_iam_role.flow_logs[0].arn
-  log_destination      = aws_cloudwatch_log_group.flow_logs[0].arn
-  traffic_type         = "ALL"
-  vpc_id               = aws_vpc.main.id
+  count           = var.enable_flow_logs ? 1 : 0
+  iam_role_arn    = aws_iam_role.flow_logs[0].arn
+  log_destination = aws_cloudwatch_log_group.flow_logs[0].arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.main.id
 
   tags = merge(var.common_tags, {
     Name = "${var.common_tags.project_name}-flow-logs"
@@ -159,6 +159,11 @@ resource "aws_cloudwatch_log_group" "flow_logs" {
   count             = var.enable_flow_logs ? 1 : 0
   name              = "/aws/vpc/${var.common_tags.project_name}-flow-logs"
   retention_in_days = 7
+
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes  = [tags]
+  }
 
   tags = var.common_tags
 }
@@ -177,6 +182,10 @@ resource "aws_iam_role" "flow_logs" {
       }
     }]
   })
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
 
   tags = var.common_tags
 }
@@ -201,3 +210,83 @@ resource "aws_iam_role_policy" "flow_logs" {
     }]
   })
 }
+
+# ============================================================================
+# VPC ENDPOINTS FOR SSM SESSION MANAGER (Systems Manager)
+# ============================================================================
+# These endpoints allow EC2 instances in private subnets to communicate
+# with AWS Systems Manager services without requiring NAT Gateway or Internet Gateway.
+# This improves security by keeping traffic within the AWS network.
+
+# SSM Endpoint (for Systems Manager Session Manager)
+resource "aws_vpc_endpoint" "ssm" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.ssm"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids         = [for subnet in aws_subnet.private_app : subnet.id]
+  security_group_ids = [aws_security_group.vpce.id]
+
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags.project_name}-ssm-endpoint"
+  })
+}
+
+# EC2 Messages Endpoint (required for Session Manager to work)
+resource "aws_vpc_endpoint" "ec2messages" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.ec2messages"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids         = [for subnet in aws_subnet.private_app : subnet.id]
+  security_group_ids = [aws_security_group.vpce.id]
+
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags.project_name}-ec2messages-endpoint"
+  })
+}
+
+# SSM Messages Endpoint (required for Session Manager to work)
+resource "aws_vpc_endpoint" "ssmmessages" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.ssmmessages"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids         = [for subnet in aws_subnet.private_app : subnet.id]
+  security_group_ids = [aws_security_group.vpce.id]
+
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags.project_name}-ssmmessages-endpoint"
+  })
+}
+
+# Security Group for VPC Endpoints (allows HTTPS from private subnets)
+resource "aws_security_group" "vpce" {
+  name        = "${var.common_tags.project_name}-vpce-sg"
+  description = "Security group for VPC Endpoints"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags.project_name}-vpce-sg"
+  })
+}
+

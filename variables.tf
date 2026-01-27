@@ -58,4 +58,8 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
-
+variable "admin_cidr" {
+  description = "CIDR block for admin SSH access to bastion host (restrict to your IP in production)"
+  type        = string
+  default     = "0.0.0.0/0" # TODO: Replace with your actual IP/organization CIDR range for production
+}
